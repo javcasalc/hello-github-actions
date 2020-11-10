@@ -1,12 +1,27 @@
-name: A workflow for my Hello World file
-on: push
+name: CI
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
-    name: Hello world action
-    runs-on: ubuntu-latest    
+    runs-on: self-hosted
     steps:
-    - uses: actions/checkout@master
-    - uses: ./action-a
-      env:
-        MY_NAME: "Mona"
+      - uses: actions/checkout@v2
+
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: vrnetlab.yml
+          directory: ./
+          inventory: |
+            [all]
+            csr1 ansible_host="172.17.0.2" ansible_ssh_user="cisco" ansible_ssh_pass="cisco" ansible_connection="network_cli" ansible_network_os="ios"
+            csr2 ansible_host="172.17.0.3" ansible_ssh_user="cisco" ansible_ssh_pass="cisco" ansible_connection="network_cli" ansible_network_os="ios"
+            
+          options: |
+            --limit group1
+            --extra-vars hello=there
+            --verbose
